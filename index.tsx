@@ -34,10 +34,17 @@ interface BloodPressureNote {
   pulse?: number;
 }
 
+interface GeneralNoteAttachment {
+  name: string;
+  type: string;
+  dataUrl: string; // Base64 data URL
+}
+
 interface GeneralNote {
   id: string;
   text: string;
   timestamp: number;
+  attachment?: GeneralNoteAttachment;
 }
 
 // --- Constantes para LocalStorage ---
@@ -80,6 +87,9 @@ let bpPulseInputEl: HTMLInputElement | null;
 let generalNotesListEl: HTMLElement | null;
 let addGeneralNoteFormEl: HTMLFormElement | null;
 let generalNoteTextInputEl: HTMLTextAreaElement | null;
+let generalNoteAttachmentInputEl: HTMLInputElement | null;
+let attachmentFilenameDisplayEl: HTMLElement | null;
+
 
 let reminderSoundEl: HTMLAudioElement | null;
 let reminderModalEl: HTMLElement | null;
@@ -206,8 +216,24 @@ function renderGeneralNotes() {
   sortedNotes.forEach(note => {
     const li = document.createElement('li');
     const date = new Date(note.timestamp).toLocaleString('es-ES');
+
+    let attachmentHtml = '';
+    if (note.attachment) {
+      attachmentHtml = `
+        <div class="attachment-info">
+          <span class="attachment-icon" aria-hidden="true">📎</span>
+          <a href="${note.attachment.dataUrl}" download="${note.attachment.name}" target="_blank" rel="noopener noreferrer" aria-label="Descargar archivo adjunto ${note.attachment.name}">
+            ${note.attachment.name}
+          </a>
+        </div>
+      `;
+    }
+
     li.innerHTML = `
-      <span><strong>${date}:</strong> ${note.text.substring(0,100)}${note.text.length > 100 ? '...' : ''}</span>
+      <div>
+        <span><strong>${date}:</strong> ${note.text.substring(0,100)}${note.text.length > 100 ? '...' : ''}</span>
+        ${attachmentHtml}
+      </div>
       <div class="actions">
         <button data-id="${note.id}" class="delete-general-note" aria-label="Eliminar nota médica del ${date}">Eliminar</button>
       </div>
@@ -328,18 +354,51 @@ function handleDeleteBpNote(event: Event) {
   }
 }
 
-function handleAddGeneralNote(event: Event) {
+async function handleAddGeneralNote(event: Event) {
   event.preventDefault();
   if (generalNoteTextInputEl) {
     const text = generalNoteTextInputEl.value.trim();
-    if (text) {
-      const newNote: GeneralNote = { id: Date.now().toString(), text, timestamp: Date.now() };
+    let attachmentData: GeneralNoteAttachment | undefined = undefined;
+
+    if (generalNoteAttachmentInputEl && generalNoteAttachmentInputEl.files && generalNoteAttachmentInputEl.files.length > 0) {
+      const file = generalNoteAttachmentInputEl.files[0];
+      // Simple size check: 5MB limit for example
+      if (file.size > 5 * 1024 * 1024) { 
+        alert('El archivo es demasiado grande. El límite es de 5MB.');
+        if (generalNoteAttachmentInputEl) generalNoteAttachmentInputEl.value = ''; // Clear file input
+        if (attachmentFilenameDisplayEl) attachmentFilenameDisplayEl.textContent = '';
+        return;
+      }
+      try {
+        attachmentData = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({ name: file.name, type: file.type, dataUrl: reader.result as string });
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+        });
+      } catch (error) {
+        console.error("Error al leer el archivo:", error);
+        alert('Hubo un error al procesar el archivo adjunto.');
+        return;
+      }
+    }
+
+    if (text || attachmentData) { // Save if there's text OR an attachment
+      const newNote: GeneralNote = { 
+        id: Date.now().toString(), 
+        text: text, // text can be empty if there's an attachment
+        timestamp: Date.now(),
+        attachment: attachmentData 
+      };
       generalNotes.push(newNote);
       saveDataToLocalStorage();
       renderGeneralNotes();
       addGeneralNoteFormEl?.reset();
+      if (generalNoteAttachmentInputEl) generalNoteAttachmentInputEl.value = '';
+      if (attachmentFilenameDisplayEl) attachmentFilenameDisplayEl.textContent = '';
+
     } else {
-      alert('Por favor, escribe algo en la nota.');
+      alert('Por favor, escribe algo en la nota o adjunta un archivo.');
     }
   }
 }
@@ -511,6 +570,9 @@ function initializeApp() {
   generalNotesListEl = document.getElementById('general-notes-list');
   addGeneralNoteFormEl = document.getElementById('add-general-note-form') as HTMLFormElement;
   generalNoteTextInputEl = document.getElementById('general-note-text') as HTMLTextAreaElement;
+  generalNoteAttachmentInputEl = document.getElementById('general-note-attachment') as HTMLInputElement;
+  attachmentFilenameDisplayEl = document.getElementById('attachment-filename-display');
+
 
   reminderSoundEl = document.getElementById('reminder-sound') as HTMLAudioElement;
   
@@ -538,6 +600,18 @@ function initializeApp() {
   addContactFormEl?.addEventListener('submit', handleAddContact);
   addBpNoteFormEl?.addEventListener('submit', handleAddBpNote);
   addGeneralNoteFormEl?.addEventListener('submit', handleAddGeneralNote);
+
+  generalNoteAttachmentInputEl?.addEventListener('change', () => {
+    if (generalNoteAttachmentInputEl && generalNoteAttachmentInputEl.files && generalNoteAttachmentInputEl.files.length > 0) {
+        if (attachmentFilenameDisplayEl) {
+            attachmentFilenameDisplayEl.textContent = `Archivo: ${generalNoteAttachmentInputEl.files[0].name}`;
+        }
+    } else {
+        if (attachmentFilenameDisplayEl) {
+            attachmentFilenameDisplayEl.textContent = '';
+        }
+    }
+  });
 
   document.getElementById('main-nav')?.addEventListener('click', handleNavigation);
   

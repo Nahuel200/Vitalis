@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vitalis</title>
+  <title>Asistente de Salud para Mayores</title>
   <meta name="description" content="Aplicación para ayudar a personas mayores a gestionar sus medicamentos, contactos de emergencia y notas de salud.">
   <meta name="theme-color" content="#005f73">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,8 +114,15 @@
         <div class="notes-subsection">
           <h3>Otra Información Médica</h3>
           <form id="add-general-note-form">
-            <label for="general-note-text">Nota Médica:</label>
-            <textarea id="general-note-text" rows="5" placeholder="Escribe aquí otra información médica relevante..."></textarea>
+            <div>
+              <label for="general-note-text">Nota Médica:</label>
+              <textarea id="general-note-text" rows="5" placeholder="Escribe aquí otra información médica relevante..."></textarea>
+            </div>
+            <div>
+              <label for="general-note-attachment">Adjuntar Archivo (opcional):</label>
+              <input type="file" id="general-note-attachment" accept="image/*,application/pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx">
+              <span id="attachment-filename-display" class="filename-display"></span>
+            </div>
             <button type="submit" id="save-general-note-button" class="action-button">Guardar Nota Médica</button>
           </form>
           <div id="general-notes-list-container">

@@ -12,7 +12,7 @@ body {
 }
 
 header {
-  background-color: #a0d2eb; /* Light sky blue background */
+  background-color: #A0D2EB; /* Light sky blue background */
   color: white;
   padding: 20px 20px; /* Slightly increased padding for modern feel */
   text-align: center;
@@ -108,6 +108,7 @@ input[type="time"],
 input[type="tel"],
 input[type="date"],
 input[type="number"],
+input[type="file"],
 textarea {
   width: 95%; 
   padding: 10px; 
@@ -117,6 +118,19 @@ textarea {
   box-sizing: border-box; 
   font-family: 'Poppins', sans-serif; /* Consistent modern font */
 }
+
+input[type="file"] {
+  padding: 6px; /* Slightly less padding for file input */
+}
+
+.filename-display {
+  display: block;
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 5px;
+  font-style: italic;
+}
+
 
 textarea {
   resize: vertical;
@@ -160,14 +174,22 @@ ul li {
   font-size: 0.95em; 
 }
 
-ul li span {
-  margin-bottom: 8px; 
+ul li > div:first-child { /* Targets the wrapper for text and attachment */
+  width: 100%;
+  margin-bottom: 8px;
 }
+
+ul li span {
+  display: block; /* Ensure span takes full width if needed and respects margins */
+  word-break: break-word; /* Prevent long text from breaking layout */
+}
+
 
 ul li .actions {
   width: 100%; 
   display: flex;
   justify-content: flex-end; 
+  margin-top: auto; /* Push actions to the bottom if content above is short */
 }
 
 ul li .actions button {
@@ -189,6 +211,34 @@ ul li .actions button.call-button {
 ul li .actions button:hover {
   opacity: 0.8;
 }
+
+.attachment-info {
+  margin-top: 8px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 119, 182, 0.05); /* Light background for attachment section */
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+
+.attachment-icon {
+  margin-right: 6px;
+  color: #0077b6; /* Match theme color */
+  font-size: 1.1em;
+}
+
+.attachment-info a {
+  color: #005f73;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.attachment-info a:hover {
+  text-decoration: underline;
+  color: #023e8a;
+}
+
 
 #reminders-list-container h3,
 #contacts-list-container h3,
