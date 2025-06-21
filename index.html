@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente de Salud para Mayores</title>
+  <meta name="description" content="Aplicación para ayudar a personas mayores a gestionar sus medicamentos, contactos de emergencia y notas de salud.">
+  <meta name="theme-color" content="#005f73">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+  <link rel="manifest" href="manifest.json">
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^0.7.0",
+    "marked": "https://esm.sh/marked@^15.0.12"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <header>
+    <h1>Vitalis</h1>
+    <div id="user-greeting"></div>
+  </header>
+
+  <nav id="main-nav">
+    <button data-section="profile" class="nav-button active" aria-label="Mi Perfil">Mi Perfil</button>
+    <button data-section="reminders" class="nav-button" aria-label="Recordatorios de Medicamentos">Recordatorios</button>
+    <button data-section="contacts" class="nav-button" aria-label="Contactos de Emergencia">Contactos</button>
+    <button data-section="notes" class="nav-button" aria-label="Mis Notas de Salud">Notas de Salud</button>
+  </nav>
+
+  <main>
+    <section id="profile-section" class="app-section active-section" aria-labelledby="profile-heading">
+      <h2 id="profile-heading">Mi Perfil</h2>
+      <div id="profile-content">
+        <label for="username-input">Nombre de Usuario:</label>
+        <input type="text" id="username-input" placeholder="Escribe tu nombre aquí">
+        <button id="save-username-button" class="action-button">Guardar Nombre</button>
+      </div>
+    </section>
+
+    <section id="reminders-section" class="app-section" aria-labelledby="reminders-heading">
+      <h2 id="reminders-heading">Recordatorios</h2>
+      <div id="reminders-content">
+        <form id="add-reminder-form">
+          <div>
+            <label for="medication-name">Nombre:</label>
+            <input type="text" id="medication-name" required>
+          </div>
+          <div>
+            <label for="medication-time">Hora (HH:MM):</label>
+            <input type="time" id="medication-time" required>
+          </div>
+          <div>
+            <label for="medication-dose">Dosis/Notas (opcional):</label>
+            <input type="text" id="medication-dose">
+          </div>
+          <button type="submit" id="add-reminder-button" class="action-button">Agregar Recordatorio</button>
+        </form>
+        <div id="reminders-list-container">
+          <h3>Mis Recordatorios:</h3>
+          <ul id="reminders-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacts-section" class="app-section" aria-labelledby="contacts-heading">
+      <h2 id="contacts-heading">Contactos de Emergencia</h2>
+      <div id="contacts-content">
+        <form id="add-contact-form">
+          <div>
+            <label for="contact-name">Nombre del Contacto:</label>
+            <input type="text" id="contact-name" required>
+          </div>
+          <div>
+            <label for="contact-phone">Número de Teléfono:</label>
+            <input type="tel" id="contact-phone" required>
+          </div>
+          <button type="submit" id="add-contact-button" class="action-button">Agregar Contacto</button>
+        </form>
+        <div id="contacts-list-container">
+          <h3>Mis Contactos:</h3>
+          <ul id="contacts-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="notes-section" class="app-section" aria-labelledby="notes-heading">
+      <h2 id="notes-heading">Mis Notas de Salud</h2>
+      <div id="notes-content">
+        <div class="notes-subsection">
+          <h3>Presión Arterial</h3>
+          <form id="add-bp-note-form">
+            <label for="bp-date">Fecha:</label>
+            <input type="date" id="bp-date" required>
+            <label for="bp-systolic">Sistólica:</label>
+            <input type="number" id="bp-systolic" placeholder="Ej: 120" required>
+            <label for="bp-diastolic">Diastólica:</label>
+            <input type="number" id="bp-diastolic" placeholder="Ej: 80" required>
+            <label for="bp-pulse">Pulso (opcional):</label>
+            <input type="number" id="bp-pulse" placeholder="Ej: 70">
+            <button type="submit" id="save-bp-note-button" class="action-button">Guardar Presión</button>
+          </form>
+          <div id="bp-notes-list-container">
+            <h4>Historial de Presión Arterial:</h4>
+            <ul id="bp-notes-list"></ul>
+          </div>
+        </div>
+        <div class="notes-subsection">
+          <h3>Otra Información Médica</h3>
+          <form id="add-general-note-form">
+            <label for="general-note-text">Nota Médica:</label>
+            <textarea id="general-note-text" rows="5" placeholder="Escribe aquí otra información médica relevante..."></textarea>
+            <button type="submit" id="save-general-note-button" class="action-button">Guardar Nota Médica</button>
+          </form>
+          <div id="general-notes-list-container">
+            <h4>Mis Notas Médicas:</h4>
+            <ul id="general-notes-list"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 Asistente de Salud. Todos los derechos reservados.</p>
+  </footer>
+
+  <audio id="reminder-sound" preload="auto">
+    <!-- Para un sonido personalizado, añade una fuente: <source src="reminder.mp3" type="audio/mpeg"> -->
+  </audio>
+
+  <div id="reminder-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title-text" aria-describedby="modal-description-text">
+    <div class="modal-overlay" tabindex="-1" data-close-modal></div>
+    <div class="modal-content-wrapper">
+      <div class="modal-header">
+        <h3 id="modal-title-text" class="modal-title-text">¡Recordatorio!</h3>
+        <button id="modal-close-button-x" class="modal-close-button" aria-label="Cerrar" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-description-text">Es hora de tomar tu medicamento.</p>
+        <p><strong>Medicamento:</strong> <span id="modal-medication-name"></span></p>
+        <p id="modal-medication-dose-container" hidden><strong>Dosis:</strong> <span id="modal-medication-dose"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-understood-button" class="action-button" data-close-modal>Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
